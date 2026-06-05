@@ -1,0 +1,35 @@
+{
+  "name": "app",
+  "version": "1.0.50",
+  "module": "src/index.js",
+  "scripts": {
+    "prepare": "husky",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build --compile --minify-whitespace --minify-syntax --target bun-linux-x64 --external pg --outfile server src/index.ts",
+    "check": "bun run format:check && bun run lint && bun run build",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt . --check"
+  },
+  "dependencies": {
+    "@elysia/cors": "^1.4.2",
+    "@elysia/openapi": "^1.4.15",
+    "@elysia/opentelemetry": "^1.4.12",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.218.0",
+    "@opentelemetry/sdk-trace-node": "^2.7.1",
+    "better-auth": "^1.6.14",
+    "drizzle-orm": "^0.45.2",
+    "elysia": "latest",
+    "pg": "^8.21.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0",
+    "bun-types": "latest",
+    "drizzle-kit": "^0.31.10",
+    "husky": "^9.1.7",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0"
+  }
+}
