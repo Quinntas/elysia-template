@@ -8,6 +8,9 @@ export const healthCheckRouter = new Elysia({
     return { status: "ok" };
   },
   {
+    detail: {
+      summary: "Health Check",
+    },
     response: {
       200: t.Object({
         status: t.String(),

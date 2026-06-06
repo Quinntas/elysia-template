@@ -1,3 +1,4 @@
+import { Elysia } from "elysia";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
@@ -11,7 +12,47 @@ export const auth = betterAuth({
     provider: "pg",
     usePlural: true,
   }),
+  emailAndPassword: {
+    enabled: true,
+  },
 });
+
+export const authMacro = new Elysia({
+  name: "auth.macro",
+}).macro({
+  auth: {
+    async resolve({ status, request: { headers } }) {
+      const session = await auth.api.getSession({
+        headers,
+      });
+
+      if (!session) return status(401);
+
+      return {
+        user: session.user,
+        session: session.session,
+      };
+    },
+  },
+});
+
+export const authRouter = new Elysia({
+  name: "auth.router",
+})
+  .mount("/auth", auth.handler)
+  .use(authMacro);
+
+export const authSecuritySchemes = {
+  bearerAuth: {
+    type: "http",
+    scheme: "bearer",
+  },
+  sessionCookie: {
+    type: "apiKey",
+    in: "cookie",
+    name: "better-auth.session_token",
+  },
+} as const;
 
 let schemaCache: ReturnType<typeof auth.api.generateOpenAPISchema>;
 const getSchema = async () => (schemaCache ??= auth.api.generateOpenAPISchema());

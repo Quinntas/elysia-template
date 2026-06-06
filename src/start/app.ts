@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { auth, OpenAPI } from "./auth";
+import { authRouter, authSecuritySchemes, OpenAPI } from "./auth";
 import { openapi } from "@elysia/openapi";
 import corsPlugin from "@elysia/cors";
 import { opentelemetry } from "@elysia/opentelemetry";
@@ -7,21 +7,7 @@ import { opentelemetry } from "@elysia/opentelemetry";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { healthCheckRouter } from "../modules/healthcheck/router/healthcheck.router";
-
-const betterAuth = new Elysia().mount("/auth", auth.handler).macro({
-  auth: {
-    async resolve({ status, request: { headers } }) {
-      const session = await auth.api.getSession({
-        headers,
-      });
-      if (!session) return status(401);
-      return {
-        user: session.user,
-        session: session.session,
-      };
-    },
-  },
-});
+import { todoRouter } from "../modules/todo/router/todo.router";
 
 export const app = new Elysia()
   .use(
@@ -34,21 +20,35 @@ export const app = new Elysia()
   )
   .use(
     openapi({
+      path: "/docs",
+      scalar: {
+        spec: {
+          url: "/docs/json",
+        },
+      },
       documentation: {
         info: {
           title: "Elysia template",
           version: "1.0.0",
+          description: "API documentation",
         },
-        components: await OpenAPI.components,
+        components: {
+          ...(await OpenAPI.components),
+          securitySchemes: {
+            ...(await OpenAPI.components).securitySchemes,
+            ...authSecuritySchemes,
+          },
+        },
         paths: await OpenAPI.getPaths(),
       },
     }),
   )
-  .use(betterAuth)
+  .use(authRouter)
   .use(
     opentelemetry({
       spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
     }),
   )
   .use(healthCheckRouter)
+  .use(todoRouter)
   .listen(3000);
