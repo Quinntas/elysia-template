@@ -27,6 +27,12 @@ export const app = new Elysia()
         },
       },
       documentation: {
+        servers: [
+          {
+            url: "http://localhost:3000",
+            description: "Local",
+          },
+        ],
         info: {
           title: "Elysia template",
           version: "1.0.0",
@@ -43,12 +49,12 @@ export const app = new Elysia()
       },
     }),
   )
-  .use(authRouter)
   .use(
     opentelemetry({
       spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
     }),
   )
+  .use(authRouter)
   .use(healthCheckRouter)
   .use(todoRouter)
   .listen(3000);
