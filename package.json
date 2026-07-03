@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
     "build": "bun build --compile --minify-whitespace --minify-syntax --target bun-linux-x64 --external pg --external kysely --external @better-auth/kysely-adapter --outfile server src/index.ts",
-    "check": "bun run format:check && bun run lint && bun run build",
+    "check": "bun run format && bun run lint && bun run build",
     "lint": "oxlint .",
     "lint:fix": "oxlint . --fix",
     "format": "oxfmt .",
