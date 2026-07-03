@@ -1,4 +1,4 @@
-export function safeJsonStringify(obj: any) {
+export function safeJsonStringify(obj: unknown) {
   try {
     return JSON.stringify(obj, null, 2);
   } catch {
@@ -6,7 +6,7 @@ export function safeJsonStringify(obj: any) {
   }
 }
 
-export function safeJsonStringifyWithAnyPrimitive(prim: any) {
+export function safeJsonStringifyWithAnyPrimitive(prim: unknown) {
   switch (typeof prim) {
     case "object":
       return safeJsonStringify(prim);

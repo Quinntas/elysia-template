@@ -10,6 +10,9 @@ import { healthCheckRouter } from "../modules/healthcheck/router/healthcheck.rou
 import { todoRouter } from "../modules/todo/router/todo.router";
 import { HttpError } from "../contracts/httpError";
 
+const authOpenAPIComponents = await OpenAPI.components;
+const authOpenAPIPaths = await OpenAPI.getPaths();
+
 export const app = new Elysia()
   .use(
     corsPlugin({
@@ -18,12 +21,14 @@ export const app = new Elysia()
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
-)
+  )
   .onError(({ error, set }) => {
     if (error instanceof HttpError) {
       set.status = error.props.status;
       return error.props;
     }
+
+    return undefined;
   })
   .use(
     openapi({
@@ -46,13 +51,15 @@ export const app = new Elysia()
           description: "API documentation",
         },
         components: {
-          ...(await OpenAPI.components),
+          ...authOpenAPIComponents,
+          // @ts-expect-error Better Auth returns a structurally compatible OpenAPI object
           securitySchemes: {
-            ...(await OpenAPI.components).securitySchemes,
+            ...authOpenAPIComponents.securitySchemes,
             ...authSecuritySchemes,
           },
         },
-        paths: await OpenAPI.getPaths(),
+        // @ts-expect-error Better Auth returns a structurally compatible OpenAPI object
+        paths: authOpenAPIPaths,
       },
     }),
   )

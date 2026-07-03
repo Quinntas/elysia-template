@@ -32,7 +32,8 @@ export const todoRouter = new Elysia({
         })
         .post(
           "/",
-          ({ body, session }) => createTodoCommand.run({ title: body.title, userId: session.userId }),
+          ({ body, session }) =>
+            createTodoCommand.run({ title: body.title, userId: session.userId }),
           {
             body: t.Object({
               title: t.String(),

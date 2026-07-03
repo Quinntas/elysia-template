@@ -1,4 +1,4 @@
-export type CacheTypes = number | string | Record<PropertyKey, any>;
+export type CacheTypes = number | string | Record<PropertyKey, unknown>;
 
 export abstract class Cache {
   abstract get(key: string): Promise<string | null>;
@@ -28,15 +28,30 @@ export abstract class Cache {
   }
 }
 
+type CacheMethodThis = { constructor: { name: string } };
+type CacheMethodSignature<Args extends unknown[], Return extends CacheTypes> = (
+  ...args: Args
+) => Promise<Return>;
+
 export function CacheMethod(cache: Cache, expiresIn: number = 3600, keyPrefix?: string) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return <Args extends unknown[], Return extends CacheTypes>(
+    target: CacheMethodThis,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<CacheMethodSignature<Args, Return>>,
+  ) => {
     const originalMethod = descriptor.value;
-    descriptor.value = async function (...args: any[]) {
+
+    if (!originalMethod) {
+      throw new Error(`Missing method descriptor for ${propertyKey}`);
+    }
+
+    descriptor.value = async function (this: CacheMethodThis, ...args: Args): Promise<Return> {
       const className = target.constructor.name;
       const argsKey = args.map((arg) => JSON.stringify(arg)).join(",");
       const prefix = keyPrefix ? `${keyPrefix}.` : "";
       const key = `${prefix}${className}.${propertyKey}.${argsKey}`;
-      return await cache.it(key, () => originalMethod.apply(this, args), expiresIn);
+
+      return cache.it(key, () => originalMethod.apply(this, args), expiresIn);
     };
   };
 }

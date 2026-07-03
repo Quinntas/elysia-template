@@ -28,8 +28,8 @@ export const spread = <T extends TObject | Table, Mode extends "select" | "inser
   schema: T,
   mode?: Mode,
 ): Spread<T, Mode> => {
-  const newSchema: Record<string, unknown> = {};
-  let table;
+  const newSchema = {} as Spread<T, Mode>;
+  let table: TObject;
 
   switch (mode) {
     case "insert":
@@ -48,9 +48,11 @@ export const spread = <T extends TObject | Table, Mode extends "select" | "inser
       table = schema;
   }
 
-  for (const key of Object.keys(table.properties)) newSchema[key] = table.properties[key];
+  for (const key of Object.keys(table.properties) as Array<keyof typeof table.properties>) {
+    newSchema[key as keyof Spread<T, Mode>] = table.properties[key] as Spread<T, Mode>[keyof Spread<T, Mode>];
+  }
 
-  return newSchema as any;
+  return newSchema;
 };
 
 /**
@@ -69,10 +71,13 @@ export const spreads = <
 ): {
   [K in keyof T]: Spread<T[K], Mode>;
 } => {
-  const newSchema: Record<string, unknown> = {};
-  const keys = Object.keys(models);
+  const newSchema = {} as {
+    [K in keyof T]: Spread<T[K], Mode>;
+  };
 
-  for (const key of keys) newSchema[key] = spread(models[key], mode);
+  for (const key of Object.keys(models) as Array<keyof T>) {
+    newSchema[key] = spread(models[key], mode);
+  }
 
-  return newSchema as any;
+  return newSchema;
 };

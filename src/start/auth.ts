@@ -56,19 +56,38 @@ export const authSecuritySchemes = {
 
 let schemaCache: ReturnType<typeof auth.api.generateOpenAPISchema>;
 const getSchema = async () => (schemaCache ??= auth.api.generateOpenAPISchema());
+type AuthOpenAPI = Awaited<ReturnType<typeof getSchema>>;
+type AuthOpenAPIPath = Exclude<AuthOpenAPI["paths"][string], undefined>;
+
+const isTaggableOperation = (value: unknown): value is { tags?: string[] } => {
+  return typeof value === "object" && value !== null;
+};
+
 export const OpenAPI = {
-  getPaths: (prefix = "/auth/api") =>
-    getSchema().then(({ paths }) => {
-      const reference: typeof paths = Object.create(null);
-      for (const path of Object.keys(paths)) {
-        const key = prefix + path;
-        reference[key] = paths[path];
-        for (const method of Object.keys(paths[path])) {
-          const operation = (reference[key] as any)[method];
+  getPaths: async (prefix = "/auth/api"): Promise<AuthOpenAPI["paths"]> => {
+    const { paths } = await getSchema();
+    const reference: AuthOpenAPI["paths"] = Object.create(null) as AuthOpenAPI["paths"];
+
+    for (const path of Object.keys(paths)) {
+      const pathItem = paths[path];
+
+      if (!pathItem) {
+        continue;
+      }
+
+      const key = prefix + path;
+      reference[key] = pathItem;
+
+      for (const method of Object.keys(pathItem)) {
+        const operation = pathItem[method as keyof AuthOpenAPIPath];
+
+        if (isTaggableOperation(operation)) {
           operation.tags = ["Better Auth"];
         }
       }
-      return reference;
-    }) as Promise<any>,
-  components: getSchema().then(({ components }) => components) as Promise<any>,
+    }
+
+    return reference;
+  },
+  components: getSchema().then(({ components }) => components),
 } as const;

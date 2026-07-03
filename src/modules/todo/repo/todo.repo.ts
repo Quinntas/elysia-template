@@ -3,8 +3,13 @@ import { TodoInsertSchema, TodoSelectSchema, TodoUpdateSchema, todoSchema } from
 import { db } from "../../../start/db";
 
 export namespace TodoRepo {
-  export async function createTodo(data: TodoInsertSchema) {
+  export async function createTodo(data: TodoInsertSchema): Promise<TodoSelectSchema> {
     const [todo] = await db.insert(todoSchema).values(data).returning();
+
+    if (!todo) {
+      throw new Error("Failed to create todo");
+    }
+
     return todo;
   }
 
