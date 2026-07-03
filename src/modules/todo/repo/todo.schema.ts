@@ -18,3 +18,7 @@ export const todoSchema = pgTable(
 );
 
 export const selectTodoSchema = createSelectSchema(todoSchema);
+
+export type TodoSelectSchema = typeof todoSchema.$inferSelect;
+export type TodoInsertSchema = typeof todoSchema.$inferInsert;
+export type TodoUpdateSchema = Partial<Pick<TodoInsertSchema, "title" | "completed">>;

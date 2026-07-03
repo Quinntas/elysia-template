@@ -8,6 +8,7 @@ import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { healthCheckRouter } from "../modules/healthcheck/router/healthcheck.router";
 import { todoRouter } from "../modules/todo/router/todo.router";
+import { HttpError } from "../contracts/httpError";
 
 export const app = new Elysia()
   .use(
@@ -17,7 +18,13 @@ export const app = new Elysia()
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
-  )
+)
+  .onError(({ error, set }) => {
+    if (error instanceof HttpError) {
+      set.status = error.props.status;
+      return error.props;
+    }
+  })
   .use(
     openapi({
       path: "/docs",
