@@ -49,7 +49,10 @@ export const spread = <T extends TObject | Table, Mode extends "select" | "inser
   }
 
   for (const key of Object.keys(table.properties) as Array<keyof typeof table.properties>) {
-    newSchema[key as keyof Spread<T, Mode>] = table.properties[key] as Spread<T, Mode>[keyof Spread<T, Mode>];
+    newSchema[key as keyof Spread<T, Mode>] = table.properties[key] as Spread<T, Mode>[keyof Spread<
+      T,
+      Mode
+    >];
   }
 
   return newSchema;
