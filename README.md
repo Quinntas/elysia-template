@@ -1,26 +1,30 @@
 # Elysia Template
 
-Type-safe Bun API template built with Elysia, Better Auth, Drizzle, Postgres, and Redis.
+Type-safe Bun API template built on Elysia 2 beta with Better Auth, Drizzle, PostgreSQL, Redis, OpenAPI, and Bun.
 
 ## Stack
 
 - Bun
-- Elysia
+- Elysia 2 beta
 - Better Auth
 - Drizzle ORM
 - PostgreSQL
 - Redis
 - OpenAPI via `@elysia/openapi`
 - OpenTelemetry
+- `typebox`
 - Oxlint + TypeScript strict mode
 
 ## Features
 
 - Typed environment loading in `src/start/env.ts`
+- Elysia 2-style route definitions
 - Session-based auth with Better Auth
 - Todo CRUD module
 - OpenAPI docs at `/docs`
 - Redis-backed Drizzle cache integration
+- RFC 9457 problem-details responses for HTTP errors
+- Bun test coverage for commands and app routes
 - Strict TypeScript and lint rules
 
 ## Requirements
@@ -76,6 +80,7 @@ The container includes a healthcheck against `GET /`.
 ## Scripts
 
 - `bun run dev` - start the app in watch mode
+- `bun run test` - run the full Bun test suite
 - `bun run build` - build the server binary
 - `bun run lint` - run oxlint
 - `bun run lint:fix` - run oxlint with fixes
@@ -104,6 +109,8 @@ All todo routes require authentication.
 - `PATCH /todos/:id` - partially update a todo
 - `DELETE /todos/:id` - delete a todo
 
+Missing todos return RFC 9457 problem details with `404`.
+
 ## OpenAPI Docs
 
 - UI: `http://localhost:3000/docs`
@@ -113,15 +120,17 @@ All todo routes require authentication.
 
 ```text
 src/
-  contracts/     Shared abstractions and errors
   adapters/      External integrations like Redis and Drizzle cache
   modules/       Feature modules such as todo and healthcheck
+    todo/infra/  Elysia-facing todo errors and router
   start/         App bootstrap, auth, db, cache, env
   utils/         Shared helpers
 ```
 
 ## Notes
 
-- Todo not-found cases return `404`
+- `src/start/app.ts` exports `createApp()` and `app`
+- `src/index.ts` is responsible for `app.listen(3000)`
 - The app uses a typed `env` object instead of reading `process.env` throughout the codebase
 - Better Auth OpenAPI output is merged into the main Elysia OpenAPI document
+- The Docker image runs the compiled `server` binary, not the source files
