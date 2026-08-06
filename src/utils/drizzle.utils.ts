@@ -3,10 +3,14 @@
  * @see https://elysiajs.com/recipe/drizzle.html#utility
  */
 
-import { Kind, type TObject } from "@sinclair/typebox";
+import type { TObject } from "typebox";
 import { createInsertSchema, createSelectSchema, BuildSchema } from "drizzle-typebox";
 
 import type { Table } from "drizzle-orm";
+
+const isTypeBoxObject = (schema: TObject | Table): schema is TObject => {
+  return typeof schema === "object" && schema !== null && "properties" in schema;
+};
 
 type Spread<T extends TObject | Table, Mode extends "select" | "insert" | undefined> =
   T extends TObject<infer Fields>
@@ -29,12 +33,12 @@ export const spread = <T extends TObject | Table, Mode extends "select" | "inser
   mode?: Mode,
 ): Spread<T, Mode> => {
   const newSchema = {} as Spread<T, Mode>;
-  let table: TObject;
+  let table: { properties: Record<string, unknown> };
 
   switch (mode) {
     case "insert":
     case "select":
-      if (Kind in schema) {
+      if (isTypeBoxObject(schema)) {
         table = schema;
         break;
       }
@@ -44,7 +48,7 @@ export const spread = <T extends TObject | Table, Mode extends "select" | "inser
       break;
 
     default:
-      if (!(Kind in schema)) throw new Error("Expect a schema");
+      if (!isTypeBoxObject(schema)) throw new Error("Expect a schema");
       table = schema;
   }
 

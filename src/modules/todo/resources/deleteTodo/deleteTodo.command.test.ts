@@ -1,6 +1,11 @@
 import { describe, expect, it } from "bun:test";
 import { TodoRepo } from "../../repo/todo.repo";
+import { TodoNotFoundError } from "../../infra/todo.error";
 import { DeleteTodoCommand } from "./deleteTodo.command";
+
+const missingTodo: typeof TodoRepo.deleteTodoById = async () => {
+  return undefined;
+};
 
 describe("DeleteTodoCommand", () => {
   const todo = {
@@ -29,14 +34,10 @@ describe("DeleteTodoCommand", () => {
   });
 
   it("throws when the todo does not exist", () => {
-    const deleteTodoById: typeof TodoRepo.deleteTodoById = async () => {
-      return undefined;
-    };
+    const command = new DeleteTodoCommand(missingTodo);
 
-    const command = new DeleteTodoCommand(deleteTodoById);
-
-    return expect(command.handle({ id: "todo-1", userId: "user-1" })).rejects.toMatchObject({
-      props: { status: 404 },
-    });
+    return expect(command.handle({ id: "todo-1", userId: "user-1" })).rejects.toBeInstanceOf(
+      TodoNotFoundError,
+    );
   });
 });

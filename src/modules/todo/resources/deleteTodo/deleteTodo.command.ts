@@ -1,5 +1,5 @@
 import { Command } from "../../../../contracts/command";
-import { HttpError } from "../../../../contracts/httpError";
+import { TodoNotFoundError } from "../../infra/todo.error";
 import { TodoRepo } from "../../repo/todo.repo";
 import { DeleteTodoInput, DeleteTodoOutput } from "./deleteTodo.io";
 
@@ -12,7 +12,7 @@ export class DeleteTodoCommand extends Command<DeleteTodoInput, DeleteTodoOutput
     const todo = await this.deleteTodoById(data);
 
     if (!todo) {
-      throw new HttpError({ status: 404, message: "Todo not found" });
+      throw new TodoNotFoundError();
     }
 
     return { data: todo };

@@ -1,5 +1,5 @@
 import { Command } from "../../../../contracts/command";
-import { HttpError } from "../../../../contracts/httpError";
+import { TodoNotFoundError } from "../../infra/todo.error";
 import { TodoRepo } from "../../repo/todo.repo";
 import { UpdateTodoInput, UpdateTodoOutput } from "./updateTodo.io";
 
@@ -12,7 +12,7 @@ export class UpdateTodoCommand extends Command<UpdateTodoInput, UpdateTodoOutput
     const todo = await this.updateTodoById(data);
 
     if (!todo) {
-      throw new HttpError({ status: 404, message: "Todo not found" });
+      throw new TodoNotFoundError();
     }
 
     return { data: todo };

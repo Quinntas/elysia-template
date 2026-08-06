@@ -1,3 +1,3 @@
 import { app } from "./start/app";
 
-void app;
+app.listen(3000);

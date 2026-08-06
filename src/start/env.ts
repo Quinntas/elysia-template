@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { Static, Type } from "@sinclair/typebox";
-import { Parse } from "@sinclair/typebox/value";
+import { Static, Type } from "typebox";
+import { Parse } from "typebox/value";
 
 dotenv.config();
 

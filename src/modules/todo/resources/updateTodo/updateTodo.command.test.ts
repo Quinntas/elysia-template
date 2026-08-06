@@ -1,6 +1,11 @@
 import { describe, expect, it } from "bun:test";
 import { TodoRepo } from "../../repo/todo.repo";
+import { TodoNotFoundError } from "../../infra/todo.error";
 import { UpdateTodoCommand } from "./updateTodo.command";
+
+const missingTodo: typeof TodoRepo.updateTodoById = async () => {
+  return undefined;
+};
 
 describe("UpdateTodoCommand", () => {
   const todo = {
@@ -37,11 +42,7 @@ describe("UpdateTodoCommand", () => {
   });
 
   it("throws when the todo does not exist", () => {
-    const updateTodoById: typeof TodoRepo.updateTodoById = async () => {
-      return undefined;
-    };
-
-    const command = new UpdateTodoCommand(updateTodoById);
+    const command = new UpdateTodoCommand(missingTodo);
 
     return expect(
       command.handle({
@@ -49,6 +50,6 @@ describe("UpdateTodoCommand", () => {
         userId: "user-1",
         changes: { title: "Updated todo" },
       }),
-    ).rejects.toMatchObject({ props: { status: 404 } });
+    ).rejects.toBeInstanceOf(TodoNotFoundError);
   });
 });
