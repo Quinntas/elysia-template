@@ -86,14 +86,18 @@ export abstract class Command<Input, Output> {
       }
     } else {
       try {
-        await this.runHook("onError", () => this.onError({ input: data, error, durationMs: getDurationMs() }));
+        await this.runHook("onError", () =>
+          this.onError({ input: data, error, durationMs: getDurationMs() }),
+        );
       } catch {
         // Preserve the original command failure if an error hook also fails.
       }
     }
 
     try {
-      await this.runHook("onSettled", () => this.onSettled(this.createHookContext(data, getDurationMs(), result, error)));
+      await this.runHook("onSettled", () =>
+        this.onSettled(this.createHookContext(data, getDurationMs(), result, error)),
+      );
     } catch (hookError) {
       if (error === undefined) {
         error = hookError;
